@@ -1,12 +1,12 @@
-#include "TemperatureSensor.h"
+#include "../../include/sensors/HumiditySensor.h"
 #include "../../include/config/PinConfig.h"
 
-TemperatureSensor::TemperatureSensor()
+HumiditySensor::HumiditySensor()
     : dht(TEMP_SENSOR_PIN, DHT_TYPE),
-      temperature(NAN) {
+      humidity(NAN) {
 }
 
-bool TemperatureSensor::begin() {
+bool HumiditySensor::begin() {
 
     dht.begin();
 
@@ -15,16 +15,16 @@ bool TemperatureSensor::begin() {
     return true;
 }
 
-bool TemperatureSensor::update() {
+bool HumiditySensor::update() {
 
-    temperature = dht.readTemperature();
+    humidity = dht.readHumidity();
 
-    return !isnan(temperature);
+    return !isnan(humidity);
 }
 
-float TemperatureSensor::read() {
+float HumiditySensor::read() {
 
-    temperature = dht.readTemperature();
+    humidity = dht.readHumidity();
 
-    return temperature;
+    return humidity;
 }
