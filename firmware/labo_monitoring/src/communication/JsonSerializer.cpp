@@ -1,4 +1,4 @@
-#include "JsonSerializer.h"
+#include "../../include/com/JsonSerializer.h"
 
 #include <ArduinoJson.h>
 

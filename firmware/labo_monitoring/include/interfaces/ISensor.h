@@ -9,7 +9,6 @@ public:
 
     virtual bool begin() = 0;
     virtual bool update() = 0;
-    virtual float read() = 0;
 };
 
 #endif

@@ -6,3 +6,6 @@
 #define MEASUREMENT_INTERVAL 5000
 #define HEARTBEAT_INTERVAL   30000
 
+#define MEASUREMENTS_ENDPOINT "/measurements"
+#define HEARTBEAT_ENDPOINT    "/heartbeat"
+

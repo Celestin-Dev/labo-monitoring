@@ -35,7 +35,7 @@ void MonitoringService::update() {
 
     if (
         now - lastMeasurement
-        < MEASUREMENT_INTERVAL_MS
+        < MEASUREMENT_INTERVAL
     ) {
         return;
     }

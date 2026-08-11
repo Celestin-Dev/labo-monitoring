@@ -1,6 +1,9 @@
 #include "../../include/sensors/COSensor.h"
 #include "../../include/config/PinConfig.h"
+
+
 COSensor :: COSensor() : _rawAnalogValue(0.0f) {}
+
 bool COSensor::begin(){
     pinMode(CO_SENSOR_PIN, INPUT);
     return true;

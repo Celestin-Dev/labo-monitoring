@@ -8,7 +8,6 @@ class MotionSensor : public ISensor {
 public:
     bool begin() override;
     bool update() override;
-
     bool detected();
 
 private:

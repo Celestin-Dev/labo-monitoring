@@ -1,19 +1,27 @@
 #include <Arduino.h>
 
 #include "../include/sensors/SensorService.h"
-#include "../include/services/MonitoringService.h"
-#include "../include/services/HeartbeatService.h"
+#include "../include/sensors/HeartbeatService.h"
+#include "../include/sensors/MonitoringService.h"
+#include "../include/network/WiFiManager.h"
+#include "../include/network/ApiClient.h"
+
+SensorService sensorService;
+MonitoringService monitoringService;
+HeartbeatService heartbeatService;
+WiFiManager wifiManager;
+ApiClient apiClient;
+
 
 void setup() {
     Serial.begin(115200);
 
     sensorService.begin();
     wifiManager.begin();
-    apiClient.begin();
 }
 
 void loop() {
-    sensorService.update();
+    sensorService.readAll();
     monitoringService.update();
     heartbeatService.update();
 }
