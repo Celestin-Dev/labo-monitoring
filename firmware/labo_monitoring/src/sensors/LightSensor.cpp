@@ -1,28 +1,42 @@
 #include "../../include/sensors/LightSensor.h"
+#include "../../include/config/PinConfig.h"
 
-// Exemple : LDR connectée sur GPIO 34 de l'ESP32
-#define LDR_PIN 34
+LightSensor::LightSensor()
+    : _rawAnalogValue(0.0f),
+      _luminosity(0.0f)
+{
+}
 
-bool LightSensor::begin() {
-    pin = LDR_PIN;
+bool LightSensor::begin()
+{
+    pinMode(LIGHT_SENSOR_PIN, INPUT);
 
-    pinMode(pin, INPUT);
-
-    // Configuration ADC ESP32
-    analogReadResolution(12); // 0 à 4095
+    // ADC ESP32 : 12 bits
+    analogReadResolution(12);
 
     return true;
 }
 
-bool LightSensor::update() {
-    int rawValue = analogRead(pin);
+bool LightSensor::update()
+{
+    int adcValue = analogRead(LIGHT_SENSOR_PIN);
 
-    // Conversion approximative en pourcentage de luminosité
-    luminosity = (rawValue / 4095.0f) * 100.0f;
+    _rawAnalogValue =
+        static_cast<float>(adcValue);
+
+    // Conversion en pourcentage
+    _luminosity =
+        (_rawAnalogValue / 4095.0f) * 100.0f;
 
     return true;
 }
 
-float LightSensor::read() {
-    return luminosity;
+float LightSensor::readRaw()
+{
+    return _rawAnalogValue;
+}
+
+float LightSensor::read()
+{
+    return _luminosity;
 }

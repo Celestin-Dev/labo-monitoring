@@ -13,6 +13,7 @@ struct SensorData {
     // Détections
     bool motionDetected = false;
     bool fireDetected = false;
+    bool buzzerActive = false;
 
     // Temps depuis le démarrage de l'ESP32
     unsigned long uptimeMs = 0;

@@ -9,8 +9,8 @@ bool COSensor::begin(){
     return true;
 }
 bool COSensor::update(){
-    int adcValue=analogRead(CO_SENSOR_PIN);
-    float _rawAnalogValue=static_cast<float>(adcValue);
+    int adcValue = analogRead(CO_SENSOR_PIN);
+    _rawAnalogValue = static_cast<float>(adcValue);
     return true;
 }
 

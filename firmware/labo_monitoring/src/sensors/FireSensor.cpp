@@ -4,7 +4,7 @@
 bool FireSensor::begin() {
 
     pinMode(
-        PIR_SENSOR_PIN,
+        FIRE_SENSOR_PIN,
         INPUT
     );
 
@@ -13,7 +13,7 @@ bool FireSensor::begin() {
 
 bool FireSensor::update() {
 
-    int value = digitalRead(PIR_SENSOR_PIN);
+    int value = digitalRead(FIRE_SENSOR_PIN);
 
 #if FIRE_ACTIVE_LOW
     fireDetected = value == LOW;

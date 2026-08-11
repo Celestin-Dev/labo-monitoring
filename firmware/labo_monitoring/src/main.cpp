@@ -16,12 +16,17 @@ ApiClient apiClient;
 void setup() {
     Serial.begin(115200);
 
-    sensorService.begin();
+    if(sensorService.begin()) {
+        Serial.println("SensorService initialized successfully.");
+    } else {
+        Serial.println("SensorService initialization failed.");
+    }
     wifiManager.begin();
 }
 
 void loop() {
-    sensorService.readAll();
     monitoringService.update();
     heartbeatService.update();
-}
+    monitoringService.printData(sensorService.readAll());
+    delay(1000);
+} 

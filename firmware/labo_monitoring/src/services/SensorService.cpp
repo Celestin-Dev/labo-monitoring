@@ -40,6 +40,8 @@ SensorData SensorService::readAll() {
 
     data.uptimeMs =
         millis();
+    
+    data.buzzerActive = fireSensor.detected() || motionSensor.detected();
 
     return data;
 }

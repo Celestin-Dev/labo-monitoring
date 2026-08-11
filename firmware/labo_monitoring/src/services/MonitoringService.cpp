@@ -84,7 +84,7 @@ void MonitoringService::printData(
     );
 
     Serial.printf(
-        "Luminosity  : %.2f lux\n",
+        "Luminosity  : %.2f %%\n",
         data.luminosity
     );
 
@@ -101,6 +101,8 @@ void MonitoringService::printData(
             ? "YES"
             : "NO"
     );
+
+    Serial.println("Buzzer      : " + String(data.buzzerActive ? "ON" : "OFF"));
 
     Serial.println(
         "================================="

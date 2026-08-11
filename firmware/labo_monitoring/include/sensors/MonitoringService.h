@@ -16,17 +16,6 @@ public:
     );
 
     void update();
-
-private:
-
-    SensorService* sensorService = nullptr;
-
-    ApiClient* apiClient = nullptr;
-
-    const DeviceInfo* deviceInfo = nullptr;
-
-    unsigned long lastMeasurement = 0;
-
     void printData(
         const SensorData& data
     );
@@ -34,4 +23,14 @@ private:
     void handleLocalAlarm(
         const SensorData& data
     );
+
+private:
+
+    SensorService* sensorService = nullptr;
+
+    ApiClient* apiClient = nullptr;
+
+    const DeviceInfo* deviceInfo = nullptr; 
+
+    unsigned long lastMeasurement = 0;
 };
