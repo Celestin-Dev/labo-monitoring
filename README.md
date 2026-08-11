@@ -115,7 +115,7 @@ src/
 ## Collaborateurs
 
 * **IAVOTRINIRAINY Nomenjanahary Célestin**
-* **Fenonirina**
+* **RABEARIMANANAHARIMINO Fenonirina**
 * **RANDRIATAHINA Jean Luca** 
 
 
