@@ -1,0 +1,8 @@
+#pragma once
+
+#define DEVICE_ID "ESP32-001"
+#define ZONE_ID   "ZONE-001"
+
+#define MEASUREMENT_INTERVAL 5000
+#define HEARTBEAT_INTERVAL   30000
+
