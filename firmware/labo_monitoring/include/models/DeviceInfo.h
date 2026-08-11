@@ -12,5 +12,5 @@ struct DeviceInfo {
     String zoneId = ZONE_ID;
 
     // Version du firmware
-    String firmwareVersion = FIRMWARE_VERSION;
+    String firmwareVersion = deviceId + "-v1.0.0";
 };
