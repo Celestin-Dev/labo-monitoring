@@ -1,3 +1,14 @@
 spring:
   application:
     name: monitoring
+
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    com.labo.monitoring: DEBUG
