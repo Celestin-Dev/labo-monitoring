@@ -103,7 +103,7 @@ Côté frontend React, s'abonner avec `@stomp/stompjs` + `sockjs-client` pour re
 4. Compare la mesure aux plages de conservation de chaque `Product` stocké dans la zone.
 5. Crée une `Alert` pour chaque dépassement détecté et met à jour le statut global de la `Zone` (le pire niveau observé l'emporte).
 
-## Prochaines étapes suggérées
+## Prochaines étapes
 
 - Authentification (Spring Security + JWT) pour protéger l'API et gérer les rôles (Admin/Technicien/Observateur de la page Utilisateurs)
 - Pagination réelle sur `/measurements` et `/alerts` pour les gros volumes
