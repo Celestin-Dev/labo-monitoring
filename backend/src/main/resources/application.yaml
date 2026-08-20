@@ -1,14 +1,36 @@
-spring:
-  application:
-    name: monitoring
-
-  profiles:
-    active: dev
-
 server:
   port: 8080
 
+spring:
+  application:
+    name: monitoring
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/lab_monitoring_db
+
+# Configuration du broker MQTT (HiveMQ Cloud ou HiveMQ local)
+mqtt:
+  host: ${MQTT_HOST:localhost}
+  port: ${MQTT_PORT:1883}
+  username: ${MQTT_USERNAME:}
+  password: ${MQTT_PASSWORD:}
+  client-id: lab-monitoring-backend
+  use-ssl: ${MQTT_USE_SSL:false}
+  topics:
+    measurements: lab/+/+/measurements   # lab/{zoneId}/{deviceId}/measurements
+    heartbeat: lab/+/+/heartbeat         # lab/{zoneId}/{deviceId}/heartbeat
+    commands: lab/%s/%s/commands         # publication vers lab/{zoneId}/{deviceId}/commands
+
+# Seuil d'inactivité au-delà duquel un appareil est considéré hors ligne
+device:
+  heartbeat-timeout-seconds: 120
+
+# Origines autorisées pour le frontend React
+app:
+  cors:
+    allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+
 logging:
   level:
-    root: INFO
-    com.labo.monitoring: DEBUG
+    com.labo.monitoring: INFO
+    com.hivemq: WARN

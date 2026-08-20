@@ -36,5 +36,4 @@ public class Product {
 
   @Field("danger_level")
   private double dangerLevel;
-
 }

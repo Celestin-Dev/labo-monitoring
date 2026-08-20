@@ -22,5 +22,5 @@ public class Zone {
   private String description;
 
   @Field("status")
-  private ZoneStatus status;
+  private ZoneStatus status = ZoneStatus.NORMAL;
 }

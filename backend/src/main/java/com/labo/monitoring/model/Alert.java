@@ -1,6 +1,8 @@
 package com.labo.monitoring.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -11,6 +13,9 @@ import lombok.Data;
 
 @Data
 @Document(collection = "alerts")
+@CompoundIndexes({
+    @CompoundIndex(name = "zone_timestamp_idx", def = "{'zoneId': 1, 'timestamp': -1}")
+})
 public class Alert {
 
   @Id
@@ -45,5 +50,11 @@ public class Alert {
 
   @Field("acknowledged_at")
   private String acknowledgedAt;
+
+  @Field("resolved")
+  private boolean resolved;
+
+  @Field("resolved_at")
+  private String resolvedAt;
 
 }

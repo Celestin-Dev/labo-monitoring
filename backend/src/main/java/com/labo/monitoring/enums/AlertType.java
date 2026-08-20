@@ -1,12 +1,15 @@
 package com.labo.monitoring.enums;
 
+/**
+ * Type de paramètre ou d evenement a l origine d une alerte.
+ */
 public enum AlertType {
   TEMPERATURE,
   HUMIDITY,
   CO,
   LUMINOSITY,
-  FIRE,
   MOTION,
-  DEVICE_OFFLINE,
-  SENSOR_ERROR,
+  FIRE,
+  PRODUCT_THRESHOLD,
+  DEVICE_OFFLINE
 }

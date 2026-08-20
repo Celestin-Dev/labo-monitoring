@@ -23,6 +23,9 @@ public class Device {
   @Field("ip_address")
   private String ipAddress;
 
+  @Field("type")
+  private String type;
+
   @Field("status")
   private DeviceStatus status;
 
