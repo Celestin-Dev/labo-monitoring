@@ -1,11 +1,15 @@
 import { Link } from 'react-router-dom'
 import { StatusDot } from './StatusBadge'
-import { STATUS_META } from '../data/mockData'
+import { STATUS_META } from '../lib/status'
+import { EmptyState } from './AsyncState'
 
 export default function ZoneStatusList({ zones }) {
   return (
-    <div className="card h-full">
-      <h3 className="section-title mb-4">État des zones</h3>
+    <div className="h-full card">
+      <h3 className="mb-4 section-title">État des zones</h3>
+      {zones.length === 0 ? (
+        <EmptyState label="Aucune zone configurée." />
+      ) : (
       <ul className="space-y-1">
         {zones.map((zone) => {
           const meta = STATUS_META[zone.status]
@@ -26,6 +30,7 @@ export default function ZoneStatusList({ zones }) {
           )
         })}
       </ul>
+      )}
     </div>
   )
 }

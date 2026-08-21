@@ -1,4 +1,3 @@
-// include/interfaces/ISensor.h
 
 #ifndef I_SENSOR_H
 #define I_SENSOR_H

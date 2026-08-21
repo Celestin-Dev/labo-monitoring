@@ -1,9 +1,16 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import SensorChart from '../components/SensorChart'
-import { zones, tempHumiditySeries, coSeries, lightSeries } from '../data/mockData'
+import { LoadingState, ErrorState } from '../components/AsyncState'
+import { useZones } from '../hooks/useZones'
+import { useMeasurementSeries } from '../hooks/useMeasurementSeries'
 
-const periods = ['1 heure', '24 heures', '7 jours', '30 jours']
+const periods = [
+  { value: '1h', label: '1 heure' },
+  { value: '24h', label: '24 heures' },
+  { value: '7d', label: '7 jours' },
+  { value: '30d', label: '30 jours' },
+]
 
 function FilterSelect({ label, value, onChange, options }) {
   return (
@@ -12,7 +19,7 @@ function FilterSelect({ label, value, onChange, options }) {
       <div className="relative">
         <select value={value} onChange={(e) => onChange(e.target.value)} className="select">
           {options.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
         <ChevronDown size={16} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -22,10 +29,15 @@ function FilterSelect({ label, value, onChange, options }) {
 }
 
 export default function Monitoring() {
-  const [zone, setZone] = useState('Toutes')
-  const [period, setPeriod] = useState('24 heures')
+  const { zones } = useZones()
+  const [zoneId, setZoneId] = useState('')
+  const [period, setPeriod] = useState('24h')
 
-  const zoneOptions = ['Toutes', ...zones.map((z) => z.name)]
+  const { series, loading, error, refresh } = useMeasurementSeries({ zoneId: zoneId || undefined, period })
+
+  const zoneOptions = [{ value: '', label: 'Toutes' }, ...zones.map((z) => ({ value: z.id, label: z.name }))]
+  const selectedZoneName = zoneId ? zones.find((z) => z.id === zoneId)?.name ?? zoneId : 'Toutes les zones'
+  const periodLabel = periods.find((p) => p.value === period)?.label
 
   return (
     <div className="space-y-6">
@@ -37,36 +49,44 @@ export default function Monitoring() {
       <div className="card">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="w-48">
-            <FilterSelect label="Zone" value={zone} onChange={setZone} options={zoneOptions} />
+            <FilterSelect label="Zone" value={zoneId} onChange={setZoneId} options={zoneOptions} />
           </div>
           <div className="w-48">
             <FilterSelect label="Période" value={period} onChange={setPeriod} options={periods} />
           </div>
           <div className="ml-auto text-xs text-slate-400 font-medium pb-2">
-            {zone === 'Toutes' ? 'Toutes les zones' : zone} · {period}
+            {selectedZoneName} · {periodLabel}
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <h3 className="section-title mb-4">Température</h3>
-        <SensorChart data={tempHumiditySeries} keys={['temperature']} />
-      </div>
+      {error && <ErrorState message={error.message} onRetry={refresh} />}
 
-      <div className="card">
-        <h3 className="section-title mb-4">Humidité</h3>
-        <SensorChart data={tempHumiditySeries} keys={['humidity']} />
-      </div>
+      {!error && loading && <LoadingState label="Chargement des mesures..." />}
 
-      <div className="card">
-        <h3 className="section-title mb-4">CO</h3>
-        <SensorChart data={coSeries} keys={['co']} />
-      </div>
+      {!error && !loading && (
+        <>
+          <div className="card">
+            <h3 className="section-title mb-4">Température</h3>
+            <SensorChart data={series} keys={['temperature']} />
+          </div>
 
-      <div className="card">
-        <h3 className="section-title mb-4">Luminosité</h3>
-        <SensorChart data={lightSeries} keys={['light']} />
-      </div>
+          <div className="card">
+            <h3 className="section-title mb-4">Humidité</h3>
+            <SensorChart data={series} keys={['humidity']} />
+          </div>
+
+          <div className="card">
+            <h3 className="section-title mb-4">CO</h3>
+            <SensorChart data={series} keys={['co']} />
+          </div>
+
+          <div className="card">
+            <h3 className="section-title mb-4">Luminosité</h3>
+            <SensorChart data={series} keys={['light']} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

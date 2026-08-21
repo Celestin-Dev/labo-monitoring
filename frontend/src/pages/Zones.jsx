@@ -1,9 +1,12 @@
 import { Thermometer, Droplets, Wind } from 'lucide-react'
 import StatusBadge from '../components/StatusBadge'
-import { zones, STATUS } from '../data/mockData'
+import { LoadingState, ErrorState, EmptyState } from '../components/AsyncState'
+import { useZones } from '../hooks/useZones'
+import { STATUS } from '../lib/status'
 
 function ZoneCard({ zone }) {
-  const offline = zone.status === STATUS.OFFLINE
+  const offline = zone.status === STATUS.OFFLINE || zone.temperature == null
+
   return (
     <div className="card flex flex-col gap-4">
       <div className="flex items-start justify-between">
@@ -39,6 +42,8 @@ function ZoneCard({ zone }) {
 }
 
 export default function Zones() {
+  const { zones, loading, error, refresh } = useZones()
+
   return (
     <div className="space-y-6">
       <div>
@@ -46,11 +51,17 @@ export default function Zones() {
         <p className="text-sm text-slate-500 mt-1">Aperçu de l'état environnemental de chaque zone du laboratoire.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        {zones.map((zone) => (
-          <ZoneCard key={zone.id} zone={zone} />
-        ))}
-      </div>
+      {loading && <LoadingState label="Chargement des zones..." />}
+      {!loading && error && <ErrorState message={error.message} onRetry={refresh} />}
+      {!loading && !error && zones.length === 0 && <EmptyState label="Aucune zone configurée pour le moment." />}
+
+      {!loading && !error && zones.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {zones.map((zone) => (
+            <ZoneCard key={zone.id} zone={zone} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

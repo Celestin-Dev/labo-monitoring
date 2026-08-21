@@ -7,31 +7,29 @@
 
 void MonitoringService::begin(
     SensorService* sensors,
-    ApiClient* api,
+    MqttClient* mqtt,
     const DeviceInfo* device
-) {
-
+)
+{
     sensorService = sensors;
 
-    apiClient = api;
+    mqttClient = mqtt;
 
     deviceInfo = device;
 
     lastMeasurement = 0;
 }
 
-void MonitoringService::update() {
-
+void MonitoringService::update()
+{
     if (
         sensorService == nullptr ||
-        apiClient == nullptr ||
         deviceInfo == nullptr
     ) {
         return;
     }
 
-    unsigned long now =
-        millis();
+    unsigned long now = millis();
 
     if (
         now - lastMeasurement
@@ -49,12 +47,24 @@ void MonitoringService::update() {
 
     handleLocalAlarm(data);
 
+    // MQTT
+    if (mqttClient != nullptr) {
+
+        mqttClient->publishMeasurement(
+            *deviceInfo,
+            data
+        );
+    }
+
 #if ENABLE_API_UPLOAD
 
-    apiClient->sendMeasurement(
-        *deviceInfo,
-        data
-    );
+    if (apiClient != nullptr) {
+
+        apiClient->sendMeasurement(
+            *deviceInfo,
+            data
+        );
+    }
 
 #endif
 }

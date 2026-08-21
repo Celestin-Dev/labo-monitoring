@@ -1,12 +1,24 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Info } from 'lucide-react'
 import { users as initialUsers } from '../../data/mockData'
 
+/**
+ * Le backend n'expose pas encore d'API Utilisateurs/Authentification.
+ * Cette page reste sur des données de démonstration en attendant
+ * l'ajout de Spring Security + JWT côté backend.
+ */
 export default function Utilisateurs() {
   const [users, setUsers] = useState(initialUsers)
 
   return (
     <div className="space-y-5">
+      <div className="rounded-lg bg-primary-50 text-primary text-xs font-medium px-4 py-3 flex items-start gap-2.5">
+        <Info size={15} className="shrink-0 mt-0.5" />
+        <span>
+          Données de démonstration — l'API Utilisateurs/Authentification n'est pas encore implémentée côté backend.
+        </span>
+      </div>
+
       <div className="flex justify-end">
         <button className="btn-primary">
           <Plus size={16} /> Nouvel utilisateur

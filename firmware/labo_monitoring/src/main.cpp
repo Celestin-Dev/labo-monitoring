@@ -1,32 +1,67 @@
 #include <Arduino.h>
 
 #include "../include/sensors/SensorService.h"
-#include "../include/sensors/HeartbeatService.h"
-#include "../include/sensors/MonitoringService.h"
 #include "../include/network/WiFiManager.h"
-#include "../include/network/ApiClient.h"
+#include "../include/network/MqttClient.h"
+#include "../include/models/DeviceInfo.h"
+#include "../include/sensors/MonitoringService.h"
 
 SensorService sensorService;
 MonitoringService monitoringService;
-HeartbeatService heartbeatService;
 WiFiManager wifiManager;
-ApiClient apiClient;
+MqttClient mqttClient;
+DeviceInfo deviceInfo;
 
 
-void setup() {
+void setup()
+{
     Serial.begin(115200);
 
-    if(sensorService.begin()) {
-        Serial.println("SensorService initialized successfully.");
+    Serial.println();
+    Serial.println("==============================");
+    Serial.println(" Laboratory Monitoring ESP32 ");
+    Serial.println("==============================");
+
+    // Capteurs
+    if (sensorService.begin()) {
+
+        Serial.println(
+            "[SENSOR] Initialized successfully"
+        );
+
     } else {
-        Serial.println("SensorService initialization failed.");
+
+        Serial.println(
+            "[SENSOR] Initialization failed"
+        );
     }
+
+    // WiFi
     wifiManager.begin();
+
+    // MQTT
+    mqttClient.begin();
+
+    // Tentative de connexion MQTT
+    mqttClient.connect();
+
+    //Monitoring
+    monitoringService.begin(
+        &sensorService,
+        &mqttClient,
+        &deviceInfo
+    );
+
 }
 
-void loop() {
+void loop()
+{
+
+    wifiManager.update();
+
+    mqttClient.update();
+
     monitoringService.update();
-    heartbeatService.update();
-    monitoringService.printData(sensorService.readAll());
-    delay(1000);
-} 
+
+    delay(100);
+}

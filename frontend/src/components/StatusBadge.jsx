@@ -1,4 +1,4 @@
-import { STATUS_META } from '../data/mockData'
+import { STATUS_META } from '../lib/status'
 
 export default function StatusBadge({ status, size = 'md' }) {
   const meta = STATUS_META[status] ?? STATUS_META.offline

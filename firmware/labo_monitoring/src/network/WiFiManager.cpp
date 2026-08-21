@@ -3,8 +3,9 @@
 #include "../../include/config/NetworkConfig.h"
 #include "../../include/config/AppConfig.h"
 
-void WiFiManager::begin() {
 
+void WiFiManager::begin()
+{
     WiFi.mode(WIFI_STA);
 
     WiFi.setAutoReconnect(true);
@@ -14,8 +15,9 @@ void WiFiManager::begin() {
     connect();
 }
 
-void WiFiManager::connect() {
 
+void WiFiManager::connect()
+{
     lastAttempt = millis();
 
     Serial.print("[WiFi] Connecting to ");
@@ -62,8 +64,9 @@ void WiFiManager::connect() {
     }
 }
 
-void WiFiManager::update() {
 
+void WiFiManager::update()
+{
     if (isConnected()) {
         return;
     }
@@ -77,16 +80,17 @@ void WiFiManager::update() {
     }
 }
 
-bool WiFiManager::isConnected() {
 
+bool WiFiManager::isConnected()
+{
     return WiFi.status()
         == WL_CONNECTED;
 }
 
-String WiFiManager::getIPAddress() {
 
+String WiFiManager::getIPAddress()
+{
     if (!isConnected()) {
-
         return "0.0.0.0";
     }
 
