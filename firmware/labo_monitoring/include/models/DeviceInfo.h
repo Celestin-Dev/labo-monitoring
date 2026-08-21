@@ -1,16 +1,30 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../config/AppConfig.h"
+
+#include "DeviceConfig.h"
+
 
 struct DeviceInfo {
 
-    // Identifiant unique de l'ESP32
-    String deviceId = DEVICE_ID;
+    String deviceId;
 
-    // Zone du laboratoire
-    String zoneId = ZONE_ID;
+    String zoneId;
 
-    // Version du firmware
-    String firmwareVersion = deviceId + "-v1.0.0";
+    String firmwareVersion;
+
+
+    void load(
+        const DeviceConfig& config
+    )
+    {
+        deviceId =
+            config.deviceId;
+
+        zoneId =
+            config.zoneId;
+
+        firmwareVersion =
+            deviceId + "-v1.0.0";
+    }
 };

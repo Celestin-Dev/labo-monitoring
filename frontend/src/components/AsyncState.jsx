@@ -12,12 +12,12 @@ export function LoadingState({ label = 'Chargement...' }) {
 export function ErrorState({ message, onRetry }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-status-critical/10 text-status-critical">
+      <div className="h-10 w-10 rounded-full bg-status-critical/10 text-status-critical flex items-center justify-center">
         <AlertTriangle size={20} />
       </div>
       <div>
         <p className="text-sm font-semibold text-slate-700">Impossible de charger les données</p>
-        <p className="mt-1 text-xs text-slate-400">{message || "Vérifiez que le backend tourne sur l'URL configurée."}</p>
+        <p className="text-xs text-slate-400 mt-1">{message || "Vérifiez que le backend tourne sur l'URL configurée."}</p>
       </div>
       {onRetry && (
         <button onClick={onRetry} className="btn-outline text-xs px-3 py-1.5 mt-1">
@@ -30,6 +30,6 @@ export function ErrorState({ message, onRetry }) {
 
 export function EmptyState({ label = 'Aucune donnée à afficher.' }) {
   return (
-    <div className="py-16 text-sm text-center text-slate-400">{label}</div>
+    <div className="py-16 text-center text-sm text-slate-400">{label}</div>
   )
 }

@@ -2,157 +2,85 @@
 
 #include <WiFi.h>
 
-
 ConfigPortal::ConfigPortal(
-    ConfigStorage* storage
-)
+    ConfigStorage *storage)
     : server(80),
       storage(storage)
 {
 }
 
-
 void ConfigPortal::begin()
 {
     Serial.println();
-    Serial.println(
-        "================================"
-    );
+    Serial.println("================================");
+    Serial.println("[CONFIG] Starting configuration AP");
+    Serial.println("================================");
 
-    Serial.println(
-        "[CONFIG] Starting configuration AP"
-    );
-
-    Serial.println(
-        "================================"
-    );
-
-
-    /*
-     * AP IP :
-     *
-     * 192.168.4.1
-     */
-
-    IPAddress apIP(
-        192, 168, 4, 1
-    );
-
-    IPAddress gateway(
-        192, 168, 4, 1
-    );
-
-    IPAddress subnet(
-        255, 255, 255, 0
-    );
-
+    // AP IP : 192.168.4.1
+    IPAddress apIP(192, 168, 4, 1);
+    IPAddress gateway(192, 168, 4, 1);
+    IPAddress subnet(255, 255, 255, 0);
 
     WiFi.mode(WIFI_AP);
+    WiFi.softAPConfig(apIP, gateway, subnet);
 
-    WiFi.softAPConfig(
-        apIP,
-        gateway,
-        subnet
-    );
+    const char *AP_SSID = "ADMIN123";
+    const char *AP_PASSWORD = "admin123";
 
+    bool result = WiFi.softAP(AP_SSID, AP_PASSWORD);
 
-    const char* AP_SSID =
-        "LAB-MONITOR-SETUP";
-
-    const char* AP_PASSWORD =
-        "labmonitor123";
-
-
-    bool result =
-        WiFi.softAP(
-            AP_SSID,
-            AP_PASSWORD
-        );
-
-
-    if (!result) {
-
-        Serial.println(
-            "[CONFIG] AP start failed"
-        );
-
+    if (!result)
+    {
+        Serial.println("[CONFIG] AP start failed");
         return;
     }
 
-
-    Serial.println(
-        "[CONFIG] AP started"
-    );
-
-    Serial.print(
-        "[CONFIG] SSID: "
-    );
-
+    Serial.println("[CONFIG] AP started");
+    Serial.print("[CONFIG] SSID: ");
     Serial.println(AP_SSID);
+    Serial.print("[CONFIG] IP: ");
+    Serial.println(WiFi.softAPIP());
 
-    Serial.print(
-        "[CONFIG] IP: "
-    );
-
-    Serial.println(
-        WiFi.softAPIP()
-    );
-
-
-    /*
-     * DNS captive portal
-     */
-
+    // DNS captive portal
     dnsServer.start(
         53,
         "*",
-        apIP
-    );
+        apIP);
 
-
-    /*
-     * Routes HTTP
-     */
-
+    // Routes HTTP
     server.on(
         "/",
         HTTP_GET,
-        [this]() {
+        [this]()
+        {
             handleRoot();
-        }
-    );
-
+        });
 
     server.on(
         "/save",
         HTTP_POST,
-        [this]() {
+        [this]()
+        {
             handleSave();
-        }
-    );
-
+        });
 
     server.onNotFound(
-        [this]() {
+        [this]()
+        {
             handleNotFound();
-        }
-    );
-
+        });
 
     server.begin();
 
     running = true;
 
-
-    Serial.println(
-        "[CONFIG] Web server started"
-    );
+    Serial.println("[CONFIG] Web server started");
 }
-
 
 void ConfigPortal::update()
 {
-    if (!running) {
+    if (!running)
+    {
         return;
     }
 
@@ -161,192 +89,93 @@ void ConfigPortal::update()
     server.handleClient();
 }
 
-
 void ConfigPortal::stop()
 {
-    if (!running) {
+    if (!running)
+    {
         return;
     }
 
     server.stop();
-
     dnsServer.stop();
-
     WiFi.softAPdisconnect(true);
 
     running = false;
 
     Serial.println(
-        "[CONFIG] Portal stopped"
-    );
+        "[CONFIG] Portal stopped");
 }
-
 
 bool ConfigPortal::isRunning()
 {
     return running;
 }
 
-
 void ConfigPortal::handleRoot()
 {
     server.send(
         200,
         "text/html",
-        htmlPage()
-    );
+        htmlPage());
 }
-
 
 void ConfigPortal::handleSave()
 {
     DeviceConfig config;
 
+    config.deviceId = server.arg("deviceId");
+    config.zoneId = server.arg("zoneId");
+    config.wifiSsid = server.arg("wifiSsid");
+    config.wifiPassword = server.arg("wifiPassword");
 
-    config.deviceId =
-        server.arg("deviceId");
-
-    config.zoneId =
-        server.arg("zoneId");
-
-    config.wifiSsid =
-        server.arg("wifiSsid");
-
-    config.wifiPassword =
-        server.arg("wifiPassword");
-
-    config.mqttBroker =
-        server.arg("mqttBroker");
-
-
-    String mqttPort =
-        server.arg("mqttPort");
-
-
-    config.mqttPort =
-        mqttPort.toInt();
-
-
-    /*
-     * Validation
-     */
-
-    if (
-        config.deviceId.isEmpty() ||
-        config.zoneId.isEmpty() ||
-        config.wifiSsid.isEmpty() ||
-        config.mqttBroker.isEmpty()
-    ) {
-
+    // Validation
+    if (config.deviceId.isEmpty() || config.zoneId.isEmpty() || config.wifiSsid.isEmpty())
+    {
         server.send(
             400,
             "text/html",
             "<h2>Erreur</h2>"
-            "<p>Veuillez remplir tous les champs obligatoires.</p>"
-        );
+            "<p>Veuillez remplir tous les champs obligatoires.</p>");
 
         return;
     }
 
+    // Sauvegarde NVS
+    bool saved = storage->save(config);
 
-    if (config.mqttPort == 0) {
-
-        config.mqttPort = 1883;
-    }
-
-
-    /*
-     * Sauvegarde NVS
-     */
-
-    bool saved =
-        storage->save(config);
-
-
-    if (!saved) {
-
+    if (!saved)
+    {
         server.send(
             500,
             "text/html",
             "<h2>Erreur</h2>"
-            "<p>Impossible de sauvegarder la configuration.</p>"
-        );
+            "<p>Impossible de sauvegarder la configuration.</p>");
 
         return;
     }
 
-
     Serial.println();
-    Serial.println(
-        "[CONFIG] Configuration saved"
-    );
+    Serial.println("[CONFIG] Configuration saved");
+    Serial.print("[CONFIG] Device ID: ");
+    Serial.println(config.deviceId);
+    Serial.print("[CONFIG] Zone ID: ");
+    Serial.println(config.zoneId);
+    Serial.print("[CONFIG] WiFi SSID: ");
+    Serial.println(config.wifiSsid);
 
-    Serial.print(
-        "[CONFIG] Device ID: "
-    );
-
-    Serial.println(
-        config.deviceId
-    );
-
-    Serial.print(
-        "[CONFIG] Zone ID: "
-    );
-
-    Serial.println(
-        config.zoneId
-    );
-
-    Serial.print(
-        "[CONFIG] WiFi SSID: "
-    );
-
-    Serial.println(
-        config.wifiSsid
-    );
-
-    Serial.print(
-        "[CONFIG] MQTT Broker: "
-    );
-
-    Serial.println(
-        config.mqttBroker
-    );
-
-
-    server.send(
-        200,
-        "text/html",
-        htmlSuccess()
-    );
-
+    server.send(200, "text/html", htmlSuccess());
 
     delay(1500);
 
     ESP.restart();
 }
 
-
 void ConfigPortal::handleNotFound()
 {
-    /*
-     * Toutes les URL sont redirigées
-     * vers la page de configuration.
-     */
+    server.sendHeader("Location", "/", true);
 
-    server.sendHeader(
-        "Location",
-        "/",
-        true
-    );
-
-    server.send(
-        302,
-        "text/plain",
-        ""
-    );
+    server.send(302, "text/plain", "");
 }
-
 
 // Page web
 String ConfigPortal::htmlPage()
@@ -444,27 +273,13 @@ button:hover {
 Laboratory Monitoring
 </h1>
 
-<div class="info">
-
-Configurez cet ESP32 avant son
-installation dans le laboratoire.
-
-</div>
+<div class="info">Configurez cet ESP32 avant son installation </div>
 
 
-<form method="POST"
-      action="/save">
+<form method="POST" action="/save">
 
-
-<h2>
-Identification
-</h2>
-
-
-<label>
-Device ID
-</label>
-
+<h2>Identification</h2>
+<label>Device ID</label>
 <input
     type="text"
     name="deviceId"
@@ -473,10 +288,7 @@ Device ID
 >
 
 
-<label>
-Zone ID
-</label>
-
+<label>Zone ID</label>
 <input
     type="text"
     name="zoneId"
@@ -485,15 +297,8 @@ Zone ID
 >
 
 
-<h2>
-WiFi de la salle
-</h2>
-
-
-<label>
-SSID WiFi
-</label>
-
+<h2>WiFi HOST</h2>
+<label>SSID WiFi</label>
 <input
     type="text"
     name="wifiSsid"
@@ -501,11 +306,7 @@ SSID WiFi
     required
 >
 
-
-<label>
-Mot de passe WiFi
-</label>
-
+<label>Mot de passe WiFi</label>
 <input
     type="password"
     name="wifiPassword"
@@ -513,40 +314,7 @@ Mot de passe WiFi
 >
 
 
-<h2>
-MQTT
-</h2>
-
-
-<label>
-Adresse du broker MQTT
-</label>
-
-<input
-    type="text"
-    name="mqttBroker"
-    placeholder="192.168.1.100"
-    required
->
-
-
-<label>
-Port MQTT
-</label>
-
-<input
-    type="number"
-    name="mqttPort"
-    value="1883"
-    required
->
-
-
-<button type="submit">
-
-Enregistrer et redémarrer
-
-</button>
+<button type="submit">Enregistrer et redémarrer</button>
 
 
 </form>
@@ -560,7 +328,6 @@ Enregistrer et redémarrer
 
     return html;
 }
-
 
 String ConfigPortal::htmlSuccess()
 {

@@ -1,47 +1,40 @@
 #include "../../include/network/MqttClient.h"
 
-#include "../../include/config/MqttConfig.h"
-
 #include <ArduinoJson.h>
-#include <WiFi.h>
-
 
 MqttClient::MqttClient()
     : mqttClient(wifiClient)
 {
 }
 
-
-void MqttClient::begin()
+void MqttClient::begin(const DeviceConfig &deviceConfig)
 {
-    mqttClient.setServer(
-        MQTT_BROKER,
-        MQTT_PORT
-    );
+    config = deviceConfig;
 
-    Serial.println(
-        "[MQTT] Client initialized"
-    );
+    mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+
+    Serial.println("[MQTT] Client initialized");
+    Serial.print("[MQTT] Broker: ");
+    Serial.print(MQTT_BROKER);
+    Serial.print(":");
+    Serial.println(MQTT_PORT);
 }
-
 
 void MqttClient::update()
 {
-    if (!WiFi.isConnected()) {
+    if (!WiFi.isConnected())
+    {
         return;
     }
 
-    if (!mqttClient.connected()) {
+    if (!mqttClient.connected())
+    {
 
         unsigned long now = millis();
 
-        if (
-            now - lastReconnectAttempt
-            >= MQTT_RECONNECT_INTERVAL
-        ) {
-
+        if (now - lastReconnectAttempt >= 5000)
+        {
             lastReconnectAttempt = now;
-
             connect();
         }
 
@@ -51,154 +44,70 @@ void MqttClient::update()
     mqttClient.loop();
 }
 
-
 bool MqttClient::connect()
 {
-    if (mqttClient.connected()) {
+    if (mqttClient.connected())
+    {
         return true;
     }
 
-    Serial.print(
-        "[MQTT] Connecting to broker: "
-    );
+    String clientId = config.deviceId;
 
-    Serial.print(MQTT_BROKER);
-    Serial.print(":");
-    Serial.println(MQTT_PORT);
+    Serial.print("[MQTT] Connecting as ");
+    Serial.println(clientId);
+    bool result = mqttClient.connect(clientId.c_str());
 
-
-    bool connected;
-
-
-    if (strlen(MQTT_USERNAME) > 0) {
-
-        connected = mqttClient.connect(
-            MQTT_CLIENT_ID,
-            MQTT_USERNAME,
-            MQTT_PASSWORD
-        );
-
-    } else {
-
-        connected = mqttClient.connect(
-            MQTT_CLIENT_ID
-        );
+    if (result)
+    {
+        Serial.println("[MQTT] Connected successfully");
+    }
+    else
+    {
+        Serial.print("[MQTT] Connection failed: ");
+        Serial.println(mqttClient.state());
     }
 
-
-    if (connected) {
-
-        Serial.println(
-            "[MQTT] Connected successfully"
-        );
-
-        return true;
-    }
-
-
-    Serial.print(
-        "[MQTT] Connection failed. State = "
-    );
-
-    Serial.println(
-        mqttClient.state()
-    );
-
-    return false;
+    return result;
 }
-
 
 bool MqttClient::isConnected()
 {
     return mqttClient.connected();
 }
 
-
-String MqttClient::buildMeasurementJson(
-    const SensorData& data
-)
+String MqttClient::buildMeasurementJson(const SensorData &data)
 {
     JsonDocument doc;
 
+    doc["temperature"] = data.temperature;
 
-    if (!isnan(data.temperature)) {
+    doc["humidity"] = data.humidity;
 
-        doc["temperature"] =
-            data.temperature;
-    }
+    doc["coRaw"] = data.coRaw;
 
+    doc["luminosity"] = data.luminosity;
 
-    if (!isnan(data.humidity)) {
+    doc["motionDetected"] = data.motionDetected;
 
-        doc["humidity"] =
-            data.humidity;
-    }
+    doc["fireDetected"] = data.fireDetected;
 
-
-    if (!isnan(data.coRaw)) {
-
-        doc["coRaw"] =
-            data.coRaw;
-    }
-
-
-    if (!isnan(data.luminosity)) {
-
-        doc["luminosity"] =
-            data.luminosity;
-    }
-
-
-    doc["motionDetected"] =
-        data.motionDetected;
-
-
-    doc["fireDetected"] =
-        data.fireDetected;
-
-
-    /*
-     * Pour l'instant timestamp utilise
-     * millis().
-     *
-     * Il faudra ensuite remplacer cette
-     * valeur par un timestamp Unix NTP.
-     */
-    doc["timestamp"] =
-        millis();
-
+    doc["timestamp"] = millis();
 
     String json;
 
-    serializeJson(
-        doc,
-        json
-    );
+    serializeJson(doc, json);
 
     return json;
 }
 
-
-bool MqttClient::publishMeasurement(
-    const DeviceInfo& device,
-    const SensorData& data
-)
+bool MqttClient::publishMeasurement(const DeviceInfo &device, const SensorData &data)
 {
-    if (!mqttClient.connected()) {
-
-        Serial.println(
-            "[MQTT] Not connected"
-        );
+    if (
+        !mqttClient.connected())
+    {
 
         return false;
     }
-
-
-    /*
-     * Topic :
-     *
-     * lab/{zoneId}/{deviceId}/measurements
-     */
 
     String topic =
         "lab/" +
@@ -207,49 +116,16 @@ bool MqttClient::publishMeasurement(
         device.deviceId +
         "/measurements";
 
-
     String json =
-        buildMeasurementJson(data);
-
+        buildMeasurementJson(
+            data);
 
     Serial.println();
-    Serial.println(
-        "[MQTT] Publishing measurement"
-    );
-
-    Serial.print(
-        "[MQTT] Topic: "
-    );
-
+    Serial.println("[MQTT] Publishing measurement");
+    Serial.print("[MQTT] Topic: ");
     Serial.println(topic);
-
-    Serial.print(
-        "[MQTT] Payload: "
-    );
-
+    Serial.print("[MQTT] Payload: ");
     Serial.println(json);
 
-
-    bool result =
-        mqttClient.publish(
-            topic.c_str(),
-            json.c_str()
-        );
-
-
-    if (result) {
-
-        Serial.println(
-            "[MQTT] Published successfully"
-        );
-
-    } else {
-
-        Serial.println(
-            "[MQTT] Publish failed"
-        );
-    }
-
-
-    return result;
+    return mqttClient.publish(topic.c_str(), json.c_str());
 }

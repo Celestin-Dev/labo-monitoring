@@ -5,16 +5,19 @@
 #include <PubSubClient.h>
 #include <WiFi.h>
 
-#include "../../include/models/SensorData.h"
-#include "../../include/models/DeviceInfo.h"
+#include "../models/SensorData.h"
+#include "../models/DeviceInfo.h"
+#include "../models/DeviceConfig.h"
+#include "../config/MqttConfig.h"
 
-class MqttClient {
+class MqttClient
+{
 
 public:
-
     MqttClient();
 
-    void begin();
+    void begin(
+        const DeviceConfig &config);
 
     void update();
 
@@ -23,31 +26,18 @@ public:
     bool isConnected();
 
     bool publishMeasurement(
-        const DeviceInfo& device,
-        const SensorData& data
-    );
-
-    bool publishHeartbeat(
-        const DeviceInfo& device,
-        const String& ip
-    );
+        const DeviceInfo &device,
+        const SensorData &data);
 
 private:
-
     WiFiClient wifiClient;
 
     PubSubClient mqttClient;
 
+    DeviceConfig config;
+
     unsigned long lastReconnectAttempt = 0;
 
     String buildMeasurementJson(
-        const SensorData& data
-    );
-
-    String buildHeartbeatJson(
-        const DeviceInfo& device,
-        const String& ip
-    );
-
-    void reconnect();
+        const SensorData &data);
 };

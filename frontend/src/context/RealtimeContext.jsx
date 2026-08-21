@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { realtimeClient } from '../lib/realtimeclient'
+import { realtimeClient } from '../lib/realtimeClient'
 
 const RealtimeContext = createContext({ connected: false })
 

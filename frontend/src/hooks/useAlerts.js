@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { alertsApi } from '../lib/api/alertes'
+import { alertsApi } from '../lib/api/alerts'
 import { useRealtimeSubscription } from '../context/RealtimeContext'
 
 export function useAlerts(filters = {}) {

@@ -1,11 +1,12 @@
 #include "../../include/network/WiFiManager.h"
 
-#include "../../include/config/NetworkConfig.h"
 #include "../../include/config/AppConfig.h"
 
-
-void WiFiManager::begin()
+void WiFiManager::begin(
+    const DeviceConfig &deviceConfig)
 {
+    config = deviceConfig;
+
     WiFi.mode(WIFI_STA);
 
     WiFi.setAutoReconnect(true);
@@ -15,84 +16,66 @@ void WiFiManager::begin()
     connect();
 }
 
-
 void WiFiManager::connect()
 {
     lastAttempt = millis();
 
     Serial.print("[WiFi] Connecting to ");
-    Serial.println(WIFI_SSID);
+    Serial.println(config.wifiSsid);
 
-    WiFi.begin(
-        WIFI_SSID,
-        WIFI_PASSWORD
-    );
+    WiFi.begin(config.wifiSsid.c_str(), config.wifiPassword.c_str());
 
     unsigned long start = millis();
 
-    while (
-        WiFi.status() != WL_CONNECTED &&
-        millis() - start < 10000
-    ) {
-
+    while (WiFi.status() != WL_CONNECTED && millis() - start < 10000)
+    {
         delay(250);
-
         Serial.print(".");
     }
 
     Serial.println();
 
-    if (isConnected()) {
-
-        Serial.println(
-            "[WiFi] Connected"
-        );
-
-        Serial.print(
-            "[WiFi] IP: "
-        );
-
-        Serial.println(
-            WiFi.localIP()
-        );
-
-    } else {
-
-        Serial.println(
-            "[WiFi] Connection failed"
-        );
+    if (isConnected())
+    {
+        Serial.println("[WiFi] Connected");
+        Serial.print("[WiFi] IP: ");
+        Serial.println(WiFi.localIP());
+    }
+    else
+    {
+        Serial.println("[WiFi] Connection failed");
     }
 }
 
-
 void WiFiManager::update()
 {
-    if (isConnected()) {
+    if (isConnected())
+    {
         return;
     }
 
     if (
-        millis() - lastAttempt
-        >= HEARTBEAT_INTERVAL
-    ) {
+        millis() - lastAttempt >= HEARTBEAT_INTERVAL)
+    {
 
         connect();
     }
 }
 
-
 bool WiFiManager::isConnected()
 {
-    return WiFi.status()
-        == WL_CONNECTED;
+    return WiFi.status() == WL_CONNECTED;
 }
-
 
 String WiFiManager::getIPAddress()
 {
-    if (!isConnected()) {
+    if (!isConnected())
+    {
+
         return "0.0.0.0";
     }
 
-    return WiFi.localIP().toString();
+    return WiFi
+        .localIP()
+        .toString();
 }

@@ -2,7 +2,8 @@
 
 #include <Arduino.h>
 
-struct DeviceConfig {
+struct DeviceConfig
+{
 
     String deviceId;
 
@@ -11,10 +12,6 @@ struct DeviceConfig {
     String wifiSsid;
 
     String wifiPassword;
-
-    String mqttBroker;
-
-    uint16_t mqttPort = 1883;
 
     bool configured = false;
 };
