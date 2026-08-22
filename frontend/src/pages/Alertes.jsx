@@ -68,6 +68,7 @@ export default function Alertes() {
   const { alerts, loading, error, refresh, acknowledge, resolve } = useAlerts(filters)
 
   const zoneOptions = [{ value: '', label: 'Toutes' }, ...zones.map((z) => ({ value: z.id, label: z.name }))]
+  const zoneNameById = Object.fromEntries(zones.map((z) => [z.id, z.name]))
 
   async function handleAcknowledge(id) {
     try {
@@ -90,13 +91,13 @@ export default function Alertes() {
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Alertes</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="mt-1 text-sm text-slate-500">
           {loading ? 'Chargement...' : `${alerts.length} alerte${alerts.length > 1 ? 's' : ''} correspondant aux filtres.`}
         </p>
       </div>
 
       <div className="card">
-        <p className="label mb-3">Filtrer</p>
+        <p className="mb-3 label">Filtrer</p>
         <div className="flex flex-wrap gap-4">
           <FilterSelect label="Type" value={type} onChange={setType} options={typeOptions} />
           <FilterSelect label="Severity" value={severity} onChange={setSeverity} options={severityOptions} />
@@ -124,11 +125,11 @@ export default function Alertes() {
                     <span className="text-xs font-semibold text-slate-400">{typeLabel(alert.type)}</span>
                   </div>
                   <h3 className="text-base font-bold text-slate-900">{alert.message}</h3>
-                  <p className="text-sm text-slate-500">{alert.zoneId}</p>
-                  <div className="flex gap-6 text-sm pt-1">
+                  <p className="text-sm text-slate-500">{zoneNameById[alert.zoneId] ?? alert.zoneId}</p>
+                  <div className="flex gap-6 pt-1 text-sm">
                     <p><span className="text-slate-400">Valeur : </span><span className="data-value text-slate-700">{alert.value ?? '—'}</span></p>
                   </div>
-                  <p className="text-xs text-slate-400 font-medium">{formatDateTime(alert.timestamp)}</p>
+                  <p className="text-xs font-medium text-slate-400">{formatDateTime(alert.timestamp)}</p>
                 </div>
 
                 <div className="flex flex-col items-end gap-2">

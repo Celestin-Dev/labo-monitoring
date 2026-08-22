@@ -1,6 +1,8 @@
 import { Info } from 'lucide-react'
 import { LoadingState, ErrorState, EmptyState } from '../components/AsyncState'
 import { useAlerts } from '../hooks/useAlerts'
+import { useZones } from '../hooks/useZones'
+import { useDevices } from '../hooks/useDevices'
 import { normalizeStatus } from '../lib/status'
 import { formatDateTime } from '../lib/mappers'
 
@@ -23,12 +25,16 @@ const typeLabelFr = {
  */
 export default function Evenements() {
   const { alerts, loading, error, refresh } = useAlerts({})
+  const { zones } = useZones()
+  const { devices } = useDevices()
+  const zoneNameById = Object.fromEntries(zones.map((z) => [z.id, z.name]))
+  const deviceNameById = Object.fromEntries(devices.map((d) => [d.id, d.name]))
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Événements</h1>
-        <p className="text-sm text-slate-500 mt-1">Journal chronologique dérivé du flux d'alertes système.</p>
+        <p className="mt-1 text-sm text-slate-500">Journal chronologique dérivé du flux d'alertes système.</p>
       </div>
 
       <div className="rounded-lg bg-primary-50 text-primary text-xs font-medium px-4 py-3 flex items-start gap-2.5">
@@ -44,11 +50,11 @@ export default function Evenements() {
       {!loading && !error && alerts.length === 0 && <EmptyState label="Aucun événement enregistré." />}
 
       {!loading && !error && alerts.length > 0 && (
-        <div className="card p-0 overflow-hidden">
+        <div className="p-0 overflow-hidden card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <tr className="text-xs font-semibold tracking-wide text-left uppercase border-b border-slate-100 text-slate-400">
                   <th className="px-5 py-3">Date</th>
                   <th className="px-5 py-3">Zone</th>
                   <th className="px-5 py-3">Type</th>
@@ -60,14 +66,14 @@ export default function Evenements() {
                 {alerts.map((alert) => (
                   <tr key={alert.id} className="hover:bg-slate-50">
                     <td className="px-5 py-3.5 whitespace-nowrap text-slate-500 font-mono text-xs">{formatDateTime(alert.timestamp)}</td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-700 whitespace-nowrap">{alert.zoneId}</td>
+                    <td className="px-5 py-3.5 font-semibold text-slate-700 whitespace-nowrap">{zoneNameById[alert.zoneId] ?? alert.zoneId}</td>
                     <td className="px-5 py-3.5">
                       <span className={`text-xs font-bold rounded-full px-2.5 py-1 ${typeStyles[normalizeStatus(alert.severity)] ?? 'bg-slate-100 text-slate-600'}`}>
                         {typeLabelFr[alert.type] ?? alert.type}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-slate-600">{alert.message}</td>
-                    <td className="px-5 py-3.5 text-slate-500">{alert.deviceId || 'Système'}</td>
+                    <td className="px-5 py-3.5 text-slate-500">{deviceNameById[alert.deviceId] ?? 'Système'}</td>
                   </tr>
                 ))}
               </tbody>
