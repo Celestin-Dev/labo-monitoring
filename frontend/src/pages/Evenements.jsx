@@ -34,7 +34,7 @@ export default function Evenements() {
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Événements</h1>
-        <p className="mt-1 text-sm text-slate-500">Journal chronologique dérivé du flux d'alertes système.</p>
+        <p className="text-sm text-slate-500 mt-1">Journal chronologique dérivé du flux d'alertes système.</p>
       </div>
 
       <div className="rounded-lg bg-primary-50 text-primary text-xs font-medium px-4 py-3 flex items-start gap-2.5">
@@ -50,11 +50,11 @@ export default function Evenements() {
       {!loading && !error && alerts.length === 0 && <EmptyState label="Aucun événement enregistré." />}
 
       {!loading && !error && alerts.length > 0 && (
-        <div className="p-0 overflow-hidden card">
+        <div className="card p-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-xs font-semibold tracking-wide text-left uppercase border-b border-slate-100 text-slate-400">
+                <tr className="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
                   <th className="px-5 py-3">Date</th>
                   <th className="px-5 py-3">Zone</th>
                   <th className="px-5 py-3">Type</th>

@@ -51,10 +51,10 @@ public class Alert {
   @Field("acknowledged_at")
   private String acknowledgedAt;
 
+  // Ajoutés pour couvrir le workflow complet côté frontend (Acquitter / Résoudre)
   @Field("resolved")
   private boolean resolved;
 
   @Field("resolved_at")
   private String resolvedAt;
-
 }

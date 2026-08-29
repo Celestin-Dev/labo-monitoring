@@ -19,10 +19,10 @@ function levelStyle(dangerLevel) {
 function ProductCard({ product, zoneName }) {
   const level = levelStyle(product.dangerLevel)
   return (
-    <div className="flex flex-col gap-4 card">
+    <div className="card flex flex-col gap-4">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-secondary/10 text-secondary shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
             <FlaskConical size={18} />
           </div>
           <div>
@@ -36,16 +36,16 @@ function ProductCard({ product, zoneName }) {
       </div>
 
       <dl className="grid grid-cols-2 gap-3 text-sm">
-        <div className="p-3 rounded-lg bg-slate-50">
-          <dt className="mb-1 text-xs font-medium text-slate-400">Zone</dt>
+        <div className="rounded-lg bg-slate-50 p-3">
+          <dt className="text-xs text-slate-400 font-medium mb-1">Zone</dt>
           <dd className="font-semibold text-slate-700">{zoneName}</dd>
         </div>
-        <div className="p-3 rounded-lg bg-slate-50">
-          <dt className="mb-1 text-xs font-medium text-slate-400">Humidité max.</dt>
+        <div className="rounded-lg bg-slate-50 p-3">
+          <dt className="text-xs text-slate-400 font-medium mb-1">Humidité max.</dt>
           <dd className="data-value text-slate-700">≤ {product.maxHumidity}%</dd>
         </div>
-        <div className="col-span-2 p-3 rounded-lg bg-slate-50">
-          <dt className="mb-1 text-xs font-medium text-slate-400">Plage de température</dt>
+        <div className="rounded-lg bg-slate-50 p-3 col-span-2">
+          <dt className="text-xs text-slate-400 font-medium mb-1">Plage de température</dt>
           <dd className="data-value text-slate-700">{product.minTemperature} → {product.maxTemperature} °C</dd>
         </div>
       </dl>
@@ -62,7 +62,7 @@ export default function Produits() {
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Produits chimiques</h1>
-        <p className="mt-1 text-sm text-slate-500">Conditions de conservation requises pour chaque produit stocké.</p>
+        <p className="text-sm text-slate-500 mt-1">Conditions de conservation requises pour chaque produit stocké.</p>
       </div>
 
       {loading && <LoadingState label="Chargement des produits..." />}
@@ -70,7 +70,7 @@ export default function Produits() {
       {!loading && !error && products.length === 0 && <EmptyState label="Aucun produit enregistré." />}
 
       {!loading && !error && products.length > 0 && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} zoneName={zoneNameById[product.zoneId] ?? product.zoneId} />
           ))}

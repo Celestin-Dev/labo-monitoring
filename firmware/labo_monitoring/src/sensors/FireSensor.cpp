@@ -1,17 +1,16 @@
 #include "../../include/sensors/FireSensor.h"
 #include "../../include/config/PinConfig.h"
 
-bool FireSensor::begin() {
+bool FireSensor::begin()
+{
 
-    pinMode(
-        FIRE_SENSOR_PIN,
-        INPUT
-    );
+    pinMode(FIRE_SENSOR_PIN, INPUT);
 
     return true;
 }
 
-bool FireSensor::update() {
+bool FireSensor::update()
+{
 
     int value = digitalRead(FIRE_SENSOR_PIN);
 
@@ -24,9 +23,10 @@ bool FireSensor::update() {
     return true;
 }
 
-bool FireSensor::detected() {
+bool FireSensor::detected()
+{
 
     update();
 
-    return fireDetected;
+    return !fireDetected;
 }

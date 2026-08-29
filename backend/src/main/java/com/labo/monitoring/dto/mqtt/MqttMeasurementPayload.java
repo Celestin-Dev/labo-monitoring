@@ -8,13 +8,13 @@ import lombok.Data;
  *
  * Exemple de payload attendu :
  * {
- * "temperature": 24,
- * "humidity": 54,
- * "coRaw": 7,
- * "luminosity": 120,
- * "motionDetected": false,
- * "fireDetected": false,
- * "timestamp": 1755680000000
+ *   "temperature": 24,
+ *   "humidity": 54,
+ *   "coRaw": 7,
+ *   "luminosity": 120,
+ *   "motionDetected": false,
+ *   "fireDetected": false,
+ *   "timestamp": 1755680000000
  * }
  *
  * Le champ "timestamp" est optionnel : si absent, le backend utilise

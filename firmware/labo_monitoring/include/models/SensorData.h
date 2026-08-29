@@ -2,7 +2,8 @@
 
 #include <Arduino.h>
 
-struct SensorData {
+struct SensorData
+{
 
     // Mesures environnementales
     float temperature = NAN;

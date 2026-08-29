@@ -14,6 +14,8 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
 
   Optional<Device> findByNameAndZoneId(String name, String zoneId);
 
+  Optional<Device> findByNameIgnoreCaseAndZoneId(String name, String zoneId);
+
   List<Device> findByStatusNot(DeviceStatus status);
 
   List<Device> findByLastHeartbeatLessThan(long thresholdEpochMillis);

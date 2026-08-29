@@ -51,6 +51,18 @@ public class ZoneService {
     zoneRepository.deleteById(id);
   }
 
+  /**
+   * Résout une zone STRICTEMENT par son nom (utilisé par le topic MQTT
+   * lab/{zoneName}/...) — NE la crée PAS si elle n'existe pas. La zone doit
+   * avoir été enregistrée au préalable via l'API/le frontend (Configuration
+   * > Zones), exactement comme elle doit l'être via le portail captif côté
+   * ESP32. Retourne vide si aucune correspondance : c'est au MqttSubscriberService
+   * de décider de rejeter le message dans ce cas.
+   */
+  public java.util.Optional<Zone> findByName(String zoneName) {
+    return zoneRepository.findByNameIgnoreCase(zoneName);
+  }
+
   /** Met à jour le statut d'une zone (appelé par le moteur d'évaluation d'alertes) et notifie le frontend. */
   public Zone updateStatus(String zoneId, ZoneStatus status) {
     Zone zone = findById(zoneId);

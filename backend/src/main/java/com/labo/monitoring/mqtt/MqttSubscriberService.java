@@ -7,23 +7,37 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.labo.monitoring.config.MqttProperties;
 import com.labo.monitoring.dto.mqtt.MqttMeasurementPayload;
+import com.labo.monitoring.model.Device;
+import com.labo.monitoring.model.Zone;
 import com.labo.monitoring.service.DeviceService;
 import com.labo.monitoring.service.MeasurementService;
+import com.labo.monitoring.service.ZoneService;
 
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * S'abonne aux topics MQTT publiés par les ESP32 et route les messages
  * reçus vers les services métier (mesures, heartbeat).
  *
  * Topics attendus :
- * - lab/{zoneId}/{deviceId}/measurements -> payload JSON MqttMeasurementPayload
- * - lab/{zoneId}/{deviceId}/heartbeat -> payload libre (juste utilisé comme
+ * - lab/{zoneName}/{deviceName}/measurements -> payload JSON
+ * MqttMeasurementPayload
+ * - lab/{zoneName}/{deviceName}/heartbeat -> payload libre (juste utilisé comme
  * "ping")
+ *
+ * SÉCURITÉ / PROVISIONING STRICT :
+ * {zoneName} et {deviceName} sont des noms lisibles (ex: "zoneA", "esp32-a1"),
+ * exactement ceux saisis côté ESP32 via le portail captif. Le backend ne les
+ * crée PLUS automatiquement : la zone et l'appareil doivent avoir été
+ * enregistrés au préalable via l'API/le frontend (mêmes noms, recherche
+ * insensible à la casse). Si l'un des deux est introuvable, le message est
+ * journalisé en warning et purement et simplement REJETÉ (aucune écriture
+ * en base) — ça empêche un appareil non provisionné, ou mal configuré côté
+ * portail captif, d'injecter des données.
  */
 @Slf4j
 @Service
@@ -41,7 +55,10 @@ public class MqttSubscriberService {
   @Autowired
   private DeviceService deviceService;
 
-  private final ObjectMappe objectMapper = new ObjectMapper();
+  @Autowired
+  private ZoneService zoneService;
+
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @EventListener(ApplicationReadyEvent.class)
   public void subscribeToTopics() {
@@ -73,23 +90,50 @@ public class MqttSubscriberService {
   }
 
   /**
-   * Extrait zoneId/deviceId depuis le topic
-   * "lab/{zoneId}/{deviceId}/measurements".
+   * Résout strictement zoneName -> Zone et deviceName -> Device.
+   * Retourne null (et journalise le rejet) si l'un des deux est introuvable.
    */
-  private void handleMeasurement(String topic, String payloadJson) throws Exception {
-    String[] parts = topic.split("/");
-    if (parts.length < 4) {
-      log.warn("Topic de mesure inattendu, ignoré : {}", topic);
-      return;
+  private Device resolveDeviceStrict(String zoneName, String deviceName) {
+    Zone zone = zoneService.findByName(zoneName).orElse(null);
+    if (zone == null) {
+      log.warn("Message MQTT REJETÉ : zone \"{}\" non enregistrée (aucune zone avec ce nom en base). "
+          + "Créez-la via Configuration > Zones avant de connecter cet appareil.", zoneName);
+      return null;
     }
-    String zoneId = parts[1];
-    String deviceId = parts[2];
 
-    MqttMeasurementPayload payload = objectMapper.readValue(payloadJson, MqttMeasurementPayload.class);
-    log.debug("Mesure reçue - zone={}, device={}, payload={}", zoneId, deviceId, payload);
+    Device device = deviceService.findByNameInZone(deviceName, zone.getId()).orElse(null);
+    if (device == null) {
+      log.warn("Message MQTT REJETÉ : appareil \"{}\" non enregistré dans la zone \"{}\". "
+          + "Créez-le via la page Appareils avec exactement ce nom avant de le connecter.", deviceName, zoneName);
+      return null;
+    }
 
-    measurementService.ingest(zoneId, deviceId, payload);
-    deviceService.registerHeartbeat(deviceId, zoneId);
+    return device;
+  }
+
+  private void handleMeasurement(String topic, String payloadJson) {
+    try {
+      String[] parts = topic.split("/");
+      if (parts.length < 4) {
+        log.warn("Topic de mesure inattendu, ignoré : {}", topic);
+        return;
+      }
+      String zoneName = parts[1];
+      String deviceName = parts[2];
+
+      Device device = resolveDeviceStrict(zoneName, deviceName);
+      if (device == null) {
+        return; // rejeté : zone/appareil non provisionné
+      }
+
+      MqttMeasurementPayload payload = objectMapper.readValue(payloadJson, MqttMeasurementPayload.class);
+      log.debug("Mesure reçue - zone={}, device={} ({}), payload={}", zoneName, deviceName, device.getId(), payload);
+
+      deviceService.touchHeartbeat(device.getId());
+      measurementService.ingest(device.getZoneId(), device.getId(), payload);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   private void handleHeartbeat(String topic, String payloadJson) {
@@ -98,8 +142,13 @@ public class MqttSubscriberService {
       log.warn("Topic de heartbeat inattendu, ignoré : {}", topic);
       return;
     }
-    String zoneId = parts[1];
-    String deviceId = parts[2];
-    deviceService.registerHeartbeat(deviceId, zoneId);
+    String zoneName = parts[1];
+    String deviceName = parts[2];
+
+    Device device = resolveDeviceStrict(zoneName, deviceName);
+    if (device == null) {
+      return; // rejeté : zone/appareil non provisionné
+    }
+    deviceService.touchHeartbeat(device.getId());
   }
 }

@@ -60,20 +60,23 @@ public class DeviceService {
   }
 
   /**
-   * Appelé à chaque message MQTT (mesure ou heartbeat) reçu d'un ESP32.
-   * Crée l'appareil s'il n'existe pas encore (auto-enregistrement), sinon
-   * met à jour son statut à ONLINE et son horodatage de dernière activité.
+   * Résout un appareil STRICTEMENT par son nom au sein d'une zone donnée
+   * (utilisé par le topic MQTT lab/{zoneName}/{deviceName}/...) — NE le crée
+   * PAS s'il n'existe pas. L'appareil doit avoir été enregistré au préalable
+   * via l'API/le frontend, avec exactement le même nom que celui saisi dans
+   * le portail captif de l'ESP32 (recherche insensible à la casse).
    */
-  public Device registerHeartbeat(String deviceId, String zoneId) {
-    Device device = deviceRepository.findById(deviceId).orElseGet(() -> {
-      Device d = new Device();
-      d.setId(deviceId);
-      d.setName(deviceId);
-      d.setZoneId(zoneId);
-      return d;
-    });
+  public java.util.Optional<Device> findByNameInZone(String deviceName, String zoneId) {
+    return deviceRepository.findByNameIgnoreCaseAndZoneId(deviceName, zoneId);
+  }
 
-    device.setZoneId(zoneId);
+  /**
+   * Marque un appareil déjà résolu comme actif à l'instant présent.
+   * Appelé à chaque message MQTT (mesure ou heartbeat) reçu d'un ESP32,
+   * une fois l'appareil identifié via findByNameInZone.
+   */
+  public Device touchHeartbeat(String deviceId) {
+    Device device = findById(deviceId);
     device.setLastHeartbeat(System.currentTimeMillis());
 
     boolean wasOffline = device.getStatus() == DeviceStatus.OFFLINE || device.getStatus() == null;

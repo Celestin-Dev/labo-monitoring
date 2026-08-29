@@ -8,9 +8,6 @@ import lombok.Data;
 @ConfigurationProperties(prefix = "device")
 public class DeviceProperties {
 
-  /**
-   * Délai (en secondes) sans heartbeat au-delà duquel un appareil est marqué
-   * OFFLINE.
-   */
+  /** Délai (en secondes) sans heartbeat au-delà duquel un appareil est marqué OFFLINE. */
   private int heartbeatTimeoutSeconds = 120;
 }

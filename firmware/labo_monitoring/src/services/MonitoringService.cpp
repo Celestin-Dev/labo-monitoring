@@ -22,8 +22,7 @@ void MonitoringService::update()
 
     unsigned long now = millis();
 
-    if (
-        now - lastMeasurement < MEASUREMENT_INTERVAL)
+    if (now - lastMeasurement < MEASUREMENT_INTERVAL)
     {
         return;
     }

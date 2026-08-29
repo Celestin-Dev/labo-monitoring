@@ -21,12 +21,10 @@ bool LightSensor::update()
 {
     int adcValue = analogRead(LIGHT_SENSOR_PIN);
 
-    _rawAnalogValue =
-        static_cast<float>(adcValue);
+    _rawAnalogValue = static_cast<float>(adcValue);
 
     // Conversion en pourcentage
-    _luminosity =
-        (_rawAnalogValue / 4095.0f) * 100.0f;
+    _luminosity = (_rawAnalogValue / 4095.0f) * 100.0f;
 
     return true;
 }

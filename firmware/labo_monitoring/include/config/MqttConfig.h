@@ -1,7 +1,7 @@
 #pragma once
 
 // Adresse IP de votre broker MQTT
-#define MQTT_BROKER "172.17.0.1"
+#define MQTT_BROKER "10.42.0.1"
 
 // Port MQTT standard
 #define MQTT_PORT 1883

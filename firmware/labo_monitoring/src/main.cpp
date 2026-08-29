@@ -12,12 +12,10 @@
 #include "../include/sensors/SensorService.h"
 #include "../include/sensors/MonitoringService.h"
 
-
 ConfigStorage configStorage;
 
 ConfigPortal configPortal(
-    &configStorage
-);
+    &configStorage);
 
 WiFiManager wifiManager;
 
@@ -31,9 +29,7 @@ DeviceConfig deviceConfig;
 
 DeviceInfo deviceInfo;
 
-
 bool configurationMode = false;
-
 
 void setup()
 {
@@ -41,158 +37,106 @@ void setup()
 
     delay(1000);
 
-
     Serial.println();
 
     Serial.println(
-        "===================================="
-    );
+        "====================================");
 
     Serial.println(
-        " Laboratory Monitoring Using ESP32"
-    );
+        " Laboratory Monitoring Using ESP32");
 
     Serial.println(
-        "====================================="
-    );
-
+        "=====================================");
 
     // NVS
-    if (!configStorage.begin()) {
+    if (!configStorage.begin())
+    {
 
         Serial.println(
-            "[STORAGE] NVS initialization failed"
-        );
+            "[STORAGE] NVS initialization failed");
 
         return;
     }
-
 
     // Vérifier configuration
-    bool configured =
-        configStorage.isConfigured();
+    bool configured = configStorage.isConfigured();
 
+    if (!configured)
+    {
 
-    if (!configured) {
+        Serial.println("[SYSTEM] No configuration found");
 
-        Serial.println(
-            "[SYSTEM] No configuration found"
-        );
+        Serial.println("[SYSTEM] Starting CONFIGURATION mode");
 
-        Serial.println(
-            "[SYSTEM] Starting CONFIGURATION mode"
-        );
-
-
-        configurationMode =
-            true;
-
+        configurationMode = true;
 
         configPortal.begin();
 
         return;
     }
-
 
     // Charger configuration
-    if (
-        !configStorage.load(
-            deviceConfig
-        )
-    ) {
+    if (!configStorage.load(deviceConfig))
+    {
 
-        Serial.println(
-            "[SYSTEM] Failed to load configuration"
-        );
+        Serial.println("[SYSTEM] Failed to load configuration");
 
-        configurationMode =
-            true;
+        configurationMode = true;
 
         configPortal.begin();
 
         return;
     }
-
 
     Serial.println();
 
-    Serial.println(
-        "[SYSTEM] Configuration loaded"
-    );
+    Serial.println("[SYSTEM] Configuration loaded");
 
-    Serial.print(
-        "[SYSTEM] Device ID: "
-    );
+    Serial.print("[SYSTEM] Device ID: ");
 
-    Serial.println(
-        deviceConfig.deviceId
-    );
+    Serial.println(deviceConfig.deviceId);
 
-    Serial.print(
-        "[SYSTEM] Zone ID: "
-    );
+    Serial.print("[SYSTEM] Zone ID: ");
 
-    Serial.println(
-        deviceConfig.zoneId
-    );
+    Serial.println(deviceConfig.zoneId);
 
     // DeviceInfo
-    deviceInfo.load(
-        deviceConfig
-    );
-
+    deviceInfo.load(deviceConfig);
 
     // Sensors
-    if (
-        sensorService.begin()
-    ) {
+    if (sensorService.begin())
+    {
 
-        Serial.println(
-            "[SENSOR] Initialized successfully"
-        );
+        Serial.println("[SENSOR] Initialized successfully");
+    }
+    else
+    {
 
-    } else {
-
-        Serial.println(
-            "[SENSOR] Initialization failed"
-        );
+        Serial.println("[SENSOR] Initialization failed");
     }
 
-
     // WiFi STA
-    wifiManager.begin(
-        deviceConfig
-    );
-
+    wifiManager.begin(deviceConfig);
 
     // MQTT
-    mqttClient.begin(
-        deviceConfig
-    );
-
+    mqttClient.begin(deviceConfig);
     mqttClient.connect();
-
 
     // Monitoring
     monitoringService.begin(
         &sensorService,
         &mqttClient,
-        &deviceInfo
-    );
-
+        &deviceInfo);
 
     Serial.println();
-
-    Serial.println(
-        "[SYSTEM] NORMAL MODE"
-    );
+    Serial.println("[SYSTEM] NORMAL MODE");
 }
-
 
 void loop()
 {
     // Configuration mode
-    if (configurationMode) {
+    if (configurationMode)
+    {
 
         configPortal.update();
 
@@ -201,14 +145,12 @@ void loop()
         return;
     }
 
-
     // Normal mode
     wifiManager.update();
 
     mqttClient.update();
 
     monitoringService.update();
-
 
     delay(100);
 }

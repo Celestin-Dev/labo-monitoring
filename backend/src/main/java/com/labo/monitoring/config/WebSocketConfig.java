@@ -9,10 +9,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 /**
  * Canal temps réel utilisé pour pousser vers le frontend :
- * - /topic/alerts -> nouvelles alertes (Alert)
- * - /topic/measurements -> nouvelles mesures (Measurment)
- * - /topic/zones -> changement de statut d'une zone (Zone)
- * - /topic/devices -> changement de statut d'un appareil (Device)
+ *  - /topic/alerts        -> nouvelles alertes (Alert)
+ *  - /topic/measurements  -> nouvelles mesures (Measurment)
+ *  - /topic/zones         -> changement de statut d'une zone (Zone)
+ *  - /topic/devices       -> changement de statut d'un appareil (Device)
  *
  * Le frontend React se connecte via SockJS + STOMP sur /ws.
  */
@@ -20,8 +20,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-  @Value("${app.cors.allowed-origins}")
-  private String allowedOrigins;
+  @Value("${app.cors.allowed-origin-patterns}")
+  private String allowedOriginPatterns;
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -32,6 +32,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry.addEndpoint("/ws")
-        .setAllowedOrigins(allowedOrigins.split(","));
+        .setAllowedOriginPatterns(allowedOriginPatterns.split(","));
   }
 }
